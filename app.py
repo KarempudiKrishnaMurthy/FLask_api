@@ -1,10 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='frontend/build', static_url_path='/')
+CORS(app)  # Allow CORS for all routes
 
 # Database Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'  # SQLite Database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db' # SQLite Database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -23,20 +26,26 @@ class Task(db.Model):
 with app.app_context():
     db.create_all()
 
-# Routes
+# Serve React Static Files
 @app.route('/')
-def home():
-    """Home route to verify the API is running."""
-    return jsonify({"message": "Welcome to the Flask API with a Database!"})
+def serve_react():
+    """Serve the React app's index.html."""
+    return send_from_directory(app.static_folder, 'index.html')
 
-# 1. Get All Tasks
+@app.route('/<path:path>')
+def serve_react_routes(path):
+    """Serve React's static files for all routes."""
+    if os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
+
+# API Routes
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     """Fetches all tasks from the database."""
     tasks = Task.query.all()
     return jsonify([task.to_dict() for task in tasks])
 
-# 2. Add a New Task
 @app.route('/tasks', methods=['POST'])
 def add_task():
     """Adds a new task to the database."""
@@ -48,7 +57,6 @@ def add_task():
     db.session.commit()
     return jsonify({"message": "Task added!", "task": new_task.to_dict()}), 201
 
-# 3. Update a Task
 @app.route('/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
     """Updates an existing task's details."""
@@ -61,7 +69,6 @@ def update_task(task_id):
     db.session.commit()
     return jsonify({"message": "Task updated!", "task": task.to_dict()})
 
-# 4. Delete a Task
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
     """Deletes a task from the database."""
