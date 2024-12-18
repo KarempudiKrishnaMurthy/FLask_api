@@ -2,13 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
-import TaskList from './TaskList/TaskList';
+// import TaskList from './TaskList/TaskList';
+import TodoList from './TodoList/TodoList';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <h1 className="text-4xl font-semibold text-center my-6">Welcome to My Task Manager</h1>
-    <TaskList />
+    <h1 className="text-4xl font-semibold text-center my-6">TodoList</h1>
+    {/* <TaskList /> */}
+    <TodoList/>
   </React.StrictMode>
 );
 
